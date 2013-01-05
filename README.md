@@ -1,4 +1,4 @@
 inpr1
 =====
 
-inpr first attemp
+inpr first attempt
