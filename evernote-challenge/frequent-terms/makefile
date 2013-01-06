@@ -3,5 +3,7 @@ FILES = \
 
 OUTNAME = frequent-terms
 
+CFLAGS =
+
 makeall: $(FILES)
-	g++ -o $(OUTNAME) $(FILES)
+	g++ -o $(OUTNAME) $(CFLAGS) $(FILES)
