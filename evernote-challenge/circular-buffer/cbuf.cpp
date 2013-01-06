@@ -6,6 +6,80 @@
 #include <algorithm>
 #include <memory>
 #include <cctype>  // tolower
+#include <vector>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// CircularBuffer
+
+class CircularBuffer
+{
+  unsigned m_maxSize;
+  unsigned m_insertPoint;
+  unsigned m_itemCount;
+
+  std::vector<std::string> m_buf;
+
+  int normalizeIndex( int index );
+
+public:
+  CircularBuffer() : m_maxSize( 0 ),
+                     m_insertPoint( 0 ),
+                     m_itemCount( 0 ),
+                     m_buf( 0 )
+  {
+  }
+
+  void setSize( unsigned size );
+  void append( std::list<std::string> list );
+  void remove( unsigned count );
+  void showList( void );
+};
+
+int CircularBuffer::normalizeIndex( int index )
+{
+  int result = index;
+  while( result < 0 )
+    result += m_maxSize;
+  result %= m_maxSize;
+  return result;
+}
+
+void CircularBuffer::setSize( unsigned size )
+{
+  m_maxSize = size;
+  m_buf.resize( size );
+  
+  // buffer state becomes undefined when size changes,
+  // this assumes that size will be set before anything
+  // is added to buffer (a valid assumption according to spec,
+  // since size always comes first).
+}
+
+void CircularBuffer::append( std::list<std::string> list )
+{
+  // we want an ordered append so avoid for_each
+  for( std::list<std::string>::iterator i = list.begin(); i != list.end(); ++i )
+  {
+    m_buf[ m_insertPoint ] = *i;
+    m_insertPoint = normalizeIndex( m_insertPoint + 1 );
+    m_itemCount = std::min( m_itemCount + 1, m_maxSize );
+  }
+}
+
+void CircularBuffer::remove( unsigned count )
+{
+  m_itemCount -= count;
+}
+
+void CircularBuffer::showList( void )
+{
+  for( int i = 0; i < m_itemCount; ++i )
+  {
+    int thisIndex = normalizeIndex( m_insertPoint - m_itemCount + i );
+    std::cout << m_buf[ thisIndex ] << std::endl;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CBufCommand and related
@@ -13,7 +87,7 @@
 class CBufCommand
 {
 public:
-  virtual void describe() = 0;
+  virtual void perform( CircularBuffer& cb ) = 0;
 };
 
 ///////////////
@@ -23,12 +97,12 @@ class CBufSizeCommand : public CBufCommand
   const unsigned m_size;
 public:
   CBufSizeCommand( unsigned _size ) : m_size( _size ) {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void CBufSizeCommand::describe()
+void CBufSizeCommand::perform( CircularBuffer& cb )
 {
-  std::cout << "Size: " << m_size << std::endl;
+  cb.setSize( m_size );
 }
 
 ///////////////
@@ -38,19 +112,12 @@ class CBufAppendCommand : public CBufCommand
   const std::list<std::string> m_appendList;
 public:
   CBufAppendCommand( std::list<std::string> _appendList ) : m_appendList( _appendList ) {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void describe_one_value( const std::string& _str )
+void CBufAppendCommand::perform( CircularBuffer& cb )
 {
-  std::cout << _str << " ";
-}
-
-void CBufAppendCommand::describe()
-{
-  std::cout << "Append values: ";
-  std::for_each( m_appendList.begin(), m_appendList.end(), &describe_one_value );
-  std::cout << std::endl;
+  cb.append( m_appendList );
 }
 
 ///////////////
@@ -60,12 +127,12 @@ class CBufRemoveCommand : public CBufCommand
   const unsigned m_removeNum;
 public:
   CBufRemoveCommand( unsigned _removeNum ) : m_removeNum( _removeNum ) {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void CBufRemoveCommand::describe()
+void CBufRemoveCommand::perform( CircularBuffer& cb )
 {
-  std::cout << "Remove " << m_removeNum << " value(s)" << std::endl;
+  cb.remove( m_removeNum );
 }
 
 ///////////////
@@ -74,12 +141,12 @@ class CBufListCommand : public CBufCommand
 {
 public:
   CBufListCommand() {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void CBufListCommand::describe()
+void CBufListCommand::perform( CircularBuffer& cb )
 {
-  std::cout << "List contents" << std::endl;
+  cb.showList();
 }
 
 ///////////////
@@ -88,12 +155,12 @@ class CBufQuitCommand : public CBufCommand
 {
 public:
   CBufQuitCommand() {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void CBufQuitCommand::describe()
+void CBufQuitCommand::perform( CircularBuffer& cb )
 {
-  std::cout << "Quit" << std::endl;
+  // do nothing
 }
 
 ///////////////
@@ -102,12 +169,12 @@ class CBufCommandError : public CBufCommand
 {
 public:
   CBufCommandError() {}
-  void describe();
+  void perform( CircularBuffer& cb );
 };
 
-void CBufCommandError::describe()
+void CBufCommandError::perform( CircularBuffer& cb )
 {
-  std::cout << "Error" << std::endl;
+  // do nothing
 }
 
 
@@ -116,7 +183,7 @@ void CBufCommandError::describe()
 
 class InputStateMachine
 {
-  bool                  m_didReadSize;
+  bool            m_didReadSize;
   std::istream&   m_istream;
 
   static unsigned readCountArg( std::string& _str );
@@ -189,16 +256,14 @@ std::auto_ptr<CBufCommand> InputStateMachine::getNextCommand( /*out*/ bool& fDon
 int main( int argc, char **argv )
 {
   InputStateMachine ism( std::cin );
+  CircularBuffer cb;
 
   bool fDone( false );
   while( !fDone )
   {
     std::auto_ptr<CBufCommand> pCmd = ism.getNextCommand( fDone );
-    pCmd->describe();
+    pCmd->perform( cb );
   }
-
-  // TODO: add parsing logic to ISM, then loop through commands and describe them for now.
-  //       once that's done, add the circular buffer.
 
   return 0;
 }
