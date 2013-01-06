@@ -1,7 +1,6 @@
 // fio.cpp: test filestream i/o, basic exception syntax
 #include <iostream>
 #include <string>
-#include <functional>
 #include <vector>
 #include <fstream>
 #include <algorithm>
