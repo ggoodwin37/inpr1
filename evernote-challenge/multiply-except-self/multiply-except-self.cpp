@@ -21,7 +21,24 @@ void multiplyExceptSelf( std::vector<long int>& vec )
   }
   for( std::vector<long int>::const_iterator it = vec.begin(); it != vec.end(); ++it )
   {
-    std::cout << (product / *it) << std::endl;
+    long int result;
+    if( *it != 0 )
+    {
+      result = product / *it;
+    }
+    else
+    {
+      // recalc
+      result = 1;
+      for( std::vector<long int>::const_iterator rit = vec.begin(); rit != vec.end(); ++rit )
+      {
+        if( rit != it )
+        {
+          result *= *rit;
+        }
+      }
+    }
+    std::cout << result << std::endl;
   }  
 }
 
