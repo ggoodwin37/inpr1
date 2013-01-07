@@ -15,28 +15,28 @@ void multiplyExceptSelf( std::vector<long int>& vec )
 {
   // calculate the entire product, then divide by each "self" when printing that line's output.
   long int product = 1;
+  bool atLeastOneZero = false;
   for( int i = 0; i < vec.size(); ++i )
   {
-    product *= vec[i];
+    if( vec[i] != 0 || atLeastOneZero )
+    {
+      product *= vec[i];
+    }
+    else
+    {
+      atLeastOneZero = true;
+    }
   }
   for( int i = 0; i < vec.size(); ++i )
   {
     long int result;
     if( vec[i] != 0 )
     {
-      result = product / vec[i];
+      result = atLeastOneZero ? 0 : product / vec[i];
     }
     else
     {
-      // recalc
-      result = 1;
-      for( int j = 0; j < vec.size(); ++j )
-      {
-        if( j != i )
-        {
-          result *= vec[j];
-        }
-      }
+      result = product;
     }
     std::cout << result << std::endl;
   }  
