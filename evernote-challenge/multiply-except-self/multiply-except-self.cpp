@@ -15,26 +15,26 @@ void multiplyExceptSelf( std::vector<long int>& vec )
 {
   // calculate the entire product, then divide by each "self" when printing that line's output.
   long int product = 1;
-  for( std::vector<long int>::const_iterator it = vec.begin(); it != vec.end(); ++it )
+  for( int i = 0; i < vec.size(); ++i )
   {
-    product *= *it;
+    product *= vec[i];
   }
-  for( std::vector<long int>::const_iterator it = vec.begin(); it != vec.end(); ++it )
+  for( int i = 0; i < vec.size(); ++i )
   {
     long int result;
-    if( *it != 0 )
+    if( vec[i] != 0 )
     {
-      result = product / *it;
+      result = product / vec[i];
     }
     else
     {
       // recalc
       result = 1;
-      for( std::vector<long int>::const_iterator rit = vec.begin(); rit != vec.end(); ++rit )
+      for( int j = 0; j < vec.size(); ++j )
       {
-        if( rit != it )
+        if( j != i )
         {
-          result *= *rit;
+          result *= vec[j];
         }
       }
     }
