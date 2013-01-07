@@ -117,6 +117,20 @@ void QuitCommand::perform( std::vector<long int>& vec ) const
 
 ///////////////
 
+class NoopCommand : public Command
+{
+public:
+  NoopCommand() {}
+  void perform( std::vector<long int>& vec ) const;
+};
+
+void NoopCommand::perform( std::vector<long int>& vec ) const
+{
+  // do nothing
+}
+
+///////////////
+
 class CommandError : public Command
 {
 public:
@@ -158,6 +172,11 @@ std::auto_ptr<const Command> InputParser::getNextCommand( /*out*/ bool& fDone )
   {
     fDone = true;
     return std::auto_ptr<const Command>( new QuitCommand() );
+  }
+
+  if( thisLine.length() == 0 )
+  {
+    return std::auto_ptr<const Command>( new NoopCommand() );
   }
 
   if( !m_didReadSize )
