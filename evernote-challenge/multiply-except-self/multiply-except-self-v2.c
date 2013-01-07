@@ -7,7 +7,7 @@ int main( int argc, char **argv )
   int numLines;
   scanf( "%i", &numLines );
 
-  long int* buf = (long int *)malloc( numLines * sizeof( long int ) );
+  int* buf = (int *)malloc( numLines * sizeof( int ) );
   int i;
   for( i = 0; i < numLines; ++i )
   {
@@ -18,7 +18,7 @@ int main( int argc, char **argv )
 
   for( i = 0; i < numLines; ++i )
   {
-    long int product = 1;
+    long long int product = 1;
     int j;
     for( j = 0; j < numLines; ++j )
     {
@@ -27,7 +27,7 @@ int main( int argc, char **argv )
         product *= buf[j];
       }
     }
-    printf( "%li\n", product );
+    printf( "%lli\n", product );
   }
 
   free( buf );
