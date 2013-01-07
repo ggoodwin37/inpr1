@@ -42,6 +42,23 @@ void multiplyExceptSelf( std::vector<long int>& vec )
   }  
 }
 
+// n^2 version
+void multiplyExceptSelf_fat( std::vector<long int>& vec )
+{
+  for( int i = 0; i < vec.size(); ++i )
+  {
+    long int result = 1;
+    for( int j = 0; j < vec.size(); ++j )
+    {
+      if( j != i )
+      {
+        result *= vec[j];
+      }
+    }
+    std::cout << result << std::endl;
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Commands
@@ -177,7 +194,8 @@ int main( int argc, char **argv )
     std::auto_ptr<const Command> pCmd = ip.getNextCommand( fDone );
     pCmd->perform( vec );
   }
-  multiplyExceptSelf( vec );
+  //multiplyExceptSelf( vec );
+  multiplyExceptSelf_fat( vec );
 
   return 0;
 }
